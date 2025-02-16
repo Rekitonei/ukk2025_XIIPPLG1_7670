@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "844787831155",
+    "project_id": "ukk2025isnaini",
+    "storage_bucket": "ukk2025isnaini.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844787831155:android:63dd10a247ad2ec59ef506",
+        "android_client_info": {
+          "package_name": "com.example.ukk"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOBv9NVUCEdiIllNrET6S9PmG4BaayHso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844787831155:android:68f05ea371e4ab129ef506",
+        "android_client_info": {
+          "package_name": "com.example.ukk_isnaini_2025"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOBv9NVUCEdiIllNrET6S9PmG4BaayHso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
