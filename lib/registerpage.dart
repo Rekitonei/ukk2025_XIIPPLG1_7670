@@ -3,21 +3,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ukk_isnaini_2025/loginpage.dart';
 
-
 class Registerpage extends StatefulWidget {
   @override
   _RegisterpageState createState() => _RegisterpageState();
 }
 
 class _RegisterpageState extends State<Registerpage> {
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  TextEditingController usernameController = TextEditingController(),
+      emailController = TextEditingController(),
+      nameController = TextEditingController(),
+      passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   void _register() async {
     String username = usernameController.text.trim();
+    String name = nameController.text.trim();
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
@@ -27,7 +28,8 @@ class _RegisterpageState extends State<Registerpage> {
     }
 
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -35,7 +37,9 @@ class _RegisterpageState extends State<Registerpage> {
       // Simpan user ke Firestore dengan tambahan username
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'username': username,
+        'name': name,
         'email': email,
+        'password': password,
         'role': 'member',
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -48,7 +52,6 @@ class _RegisterpageState extends State<Registerpage> {
           MaterialPageRoute(builder: (context) => LoginPage()),
         );
       });
-
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
         _showAlert('Akun ini sudah ada, silakan gunakan email lain');
@@ -74,7 +77,9 @@ class _RegisterpageState extends State<Registerpage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false, // Menghindari masalah dengan keyboard
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text('Register'),
+      ),
       body: Stack(
         children: [
           // Konten utama
@@ -104,6 +109,18 @@ class _RegisterpageState extends State<Registerpage> {
                         controller: usernameController,
                         decoration: InputDecoration(
                           labelText: 'Username',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      TextField(
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Nama',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -148,7 +165,7 @@ class _RegisterpageState extends State<Registerpage> {
                         ),
                         child: Text(
                           'Register',
-                          style: TextStyle(fontSize: 18 , color: Colors.white),
+                          style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ),
                       SizedBox(height: 12),

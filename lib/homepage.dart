@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:ukk_isnaini_2025/kategoripage.dart';
 import 'package:ukk_isnaini_2025/taskaddpage.dart';
 import 'package:ukk_isnaini_2025/taskdetailpage.dart';
 
@@ -134,6 +135,16 @@ class _HomepageState extends State<Homepage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => TaskAddPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.category_sharp),
+              title: Text('Katagori'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => KategoriPage()),
                 );
               },
             ),

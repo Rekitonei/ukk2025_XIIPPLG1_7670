@@ -11,17 +11,20 @@ class TaskDetailPage extends StatefulWidget {
 
 class _TaskDetailPageState extends State<TaskDetailPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   String taskName = "";
-  String category = "";
   String description = "";
   String taskStatus = "ToDo";
+  String createdAt = "";
+  String? taskCategory;
+  List<String> categories = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadTaskDetails();
+    _loadCategories();
   }
 
   void _loadTaskDetails() async {
@@ -31,9 +34,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       if (taskSnapshot.exists) {
         setState(() {
           taskName = taskSnapshot['task'];
-          category = taskSnapshot['catagory'];
           description = taskSnapshot['deskripsion'];
           taskStatus = taskSnapshot['status'];
+          taskCategory = taskSnapshot['category'];
           isLoading = false;
         });
       }
@@ -42,6 +45,19 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  void _loadCategories() async {
+    try {
+      QuerySnapshot querySnapshot =
+          await _firestore.collection('kategori').get();
+      setState(() {
+        categories =
+            querySnapshot.docs.map((doc) => doc['nama'] as String).toList();
+      });
+    } catch (e) {
+      print("Error loading categories: $e");
     }
   }
 
@@ -62,9 +78,11 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   }
 
   void _editTask() {
-    TextEditingController taskController = TextEditingController(text: taskName);
-    TextEditingController categoryController = TextEditingController(text: category);
-    TextEditingController descriptionController = TextEditingController(text: description);
+    TextEditingController taskController =
+        TextEditingController(text: taskName);
+    TextEditingController descriptionController =
+        TextEditingController(text: description);
+    String? selectedCategory = taskCategory;
 
     showDialog(
       context: context,
@@ -74,17 +92,38 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              SizedBox(height: 5,),
               TextField(
                 controller: taskController,
                 decoration: InputDecoration(labelText: "Judul Tugas"),
               ),
-              TextField(
-                controller: categoryController,
-                decoration: InputDecoration(labelText: "Kategori"),
-              ),
+              SizedBox(height: 10,),
               TextField(
                 controller: descriptionController,
                 decoration: InputDecoration(labelText: "Deskripsi"),
+              ),
+              SizedBox(height: 15,),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                hint: Text("Pilih Kategori"),
+                isExpanded: true,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategory = newValue;
+                  });
+                },
+                items: categories.map<DropdownMenuItem<String>>((String cat) {
+                  return DropdownMenuItem<String>(
+                    value: cat,
+                    child: Text(cat),
+                  );
+                }).toList(),
+                decoration: InputDecoration(
+                  labelText: "Pilih Kategori",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
             ],
           ),
@@ -97,17 +136,17 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               onPressed: () async {
                 await _firestore.collection('tasks').doc(widget.taskId).update({
                   'task': taskController.text.trim(),
-                  'catagory': categoryController.text.trim(),
                   'deskripsion': descriptionController.text.trim(),
+                  'category': selectedCategory,
                 });
                 setState(() {
                   taskName = taskController.text.trim();
-                  category = categoryController.text.trim();
                   description = descriptionController.text.trim();
+                  taskCategory = selectedCategory;
                 });
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text("Tugas berhasil diperbarui")));
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Tugas berhasil diperbarui")));
               },
               child: Text("Simpan"),
             ),
@@ -145,7 +184,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                         Navigator.pop(context);
                         _deleteTask();
                       },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
                       child: Text("Hapus"),
                     ),
                   ],
@@ -163,28 +203,28 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Judul Tugas:",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 5),
                   Text(taskName, style: TextStyle(fontSize: 20)),
-
                   SizedBox(height: 20),
-
-                  Text("Kategori:",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text("Kategori Tugas:",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 5),
-                  Text(category, style: TextStyle(fontSize: 18, color: Colors.grey[700])),
-
+                  Text(taskCategory ?? "Tidak ada kategori",
+                      style: TextStyle(fontSize: 16, color: Colors.black87)),
                   SizedBox(height: 20),
-
                   Text("Deskripsi Tugas:",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 5),
-                  Text(description, style: TextStyle(fontSize: 16, color: Colors.black87)),
-
+                  Text(description,
+                      style: TextStyle(fontSize: 16, color: Colors.black87)),
                   SizedBox(height: 20),
-
                   Text("Status Tugas:",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 5),
                   DropdownButton<String>(
                     value: taskStatus,

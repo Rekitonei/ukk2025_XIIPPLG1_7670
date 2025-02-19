@@ -11,35 +11,69 @@ class TaskAddPage extends StatefulWidget {
 
 class _TaskAddPageState extends State<TaskAddPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  TextEditingController taskController = TextEditingController(),
-      catagoryController = TextEditingController(),
-      deskripsionController = TextEditingController();
   final User? user = FirebaseAuth.instance.currentUser;
 
-  void _addTask() async {
+  TextEditingController taskController = TextEditingController();
+  TextEditingController deskripsionController = TextEditingController();
+
+  List<String> categories = [];
+  String? selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories(); // Ambil daftar kategori saat halaman dimuat
+  }
+
+  /// **Mengambil daftar kategori dari Firestore**
+  void _loadCategories() async {
+    try {
+      QuerySnapshot querySnapshot =
+          await _firestore.collection('kategori').get();
+
+      setState(() {
+        categories = querySnapshot.docs
+            .map((doc) => doc['nama'] as String) // Ambil field 'name'
+            .toList();
+        if (categories.isNotEmpty) {
+          selectedCategory = categories.first; // Pilih kategori pertama
+        }
+      });
+    } catch (e) {
+      print("❌ Gagal mengambil kategori: $e");
+    }
+  }
+
+  /// **Menambahkan tugas ke Firestore**
+ void _addTask() async {
     String taskText = taskController.text.trim();
-    String catagoryText = catagoryController.text.trim();
     String deskripsion = deskripsionController.text.trim();
+
     if (taskText.isEmpty) {
       _showSnackBar("Tugas tidak boleh kosong");
       return;
     }
+
     try {
       await _firestore.collection('tasks').add({
         'task': taskText,
-        'catagory': catagoryText,
         'deskripsion': deskripsion,
         'assignedBy': user?.uid ?? '',
+        'category': selectedCategory, // Simpan kategori
         'status': 'ToDo',
         'createdAt': FieldValue.serverTimestamp(),
       });
+
       taskController.clear();
-      Navigator.pop(context); // Go back after adding task
+      deskripsionController.clear();
+
+      Navigator.pop(context);
     } catch (e) {
       _showSnackBar("Gagal menambahkan tugas: $e");
     }
   }
 
+  /// **Menampilkan pesan snackbar**
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
@@ -54,7 +88,7 @@ class _TaskAddPageState extends State<TaskAddPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Tambah Tugas",
+            const Text("Tambah Tugas",
                 style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             TextField(
@@ -63,50 +97,61 @@ class _TaskAddPageState extends State<TaskAddPage> {
                 labelText: 'Tugas Baru',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: Colors.blueAccent),
-                ),
-              ),
-            ),
-            Text("Katagori",
-                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            TextField(
-              controller: catagoryController,
-              decoration: InputDecoration(
-                
-                labelText: 'Katagori',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: Colors.blueAccent),
-                ),
-              ),
-            ),
-            Text("Deskripsi Tugas",
-                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            TextField(
-              
-              controller: deskripsionController,
-              decoration: InputDecoration(
-                
-                labelText: 'Deskripsi',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: Colors.blueAccent),
                 ),
               ),
             ),
             SizedBox(height: 20),
+            const Text("Deskripsi Tugas",
+                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            TextField(
+              controller: deskripsionController,
+              decoration: InputDecoration(
+                labelText: 'Deskripsi',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            Text("Kategori",
+                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+
+            // **Dropdown Kategori**
+            DropdownButtonFormField<String>(
+              value: selectedCategory,
+              hint: Text("Pilih Kategori"),
+              isExpanded: true,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedCategory = newValue;
+                });
+              },
+              items: categories.map<DropdownMenuItem<String>>((String cat) {
+                return DropdownMenuItem<String>(
+                  value: cat,
+                  child: Text(cat),
+                );
+              }).toList(),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+            ),
+
+            SizedBox(height: 20),
             Align(
               alignment: Alignment.centerRight,
-              child: OutlinedButton.icon(
+              child: ElevatedButton.icon(
                 onPressed: _addTask,
-                icon: Icon(Icons.add, color: Colors.blue),
-                label: Text("Tambah", style: TextStyle(color: Colors.blue)),
+                icon: Icon(Icons.add, color: Colors.grey),
+                label: Text("Tambah", style: TextStyle(color: Colors.black)),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0)),
-                  side: BorderSide(color: Colors.blue),
+                  side: BorderSide(color: Colors.blueGrey),
                 ),
               ),
             ),
