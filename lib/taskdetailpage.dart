@@ -34,7 +34,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       if (taskSnapshot.exists) {
         setState(() {
           taskName = taskSnapshot['task'];
-          description = taskSnapshot['deskripsion'];
+          description = taskSnapshot['deskripsi'];
           taskStatus = taskSnapshot['status'];
           taskCategory = taskSnapshot['category'];
           isLoading = false;
@@ -61,14 +61,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     }
   }
 
-  void _updateStatus(String newStatus) async {
-    await _firestore.collection('tasks').doc(widget.taskId).update({
-      'status': newStatus,
-    });
-    setState(() {
-      taskStatus = newStatus;
-    });
-  }
 
   void _deleteTask() async {
     await _firestore.collection('tasks').doc(widget.taskId).delete();
@@ -92,17 +84,23 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(height: 5,),
+              SizedBox(
+                height: 5,
+              ),
               TextField(
                 controller: taskController,
                 decoration: InputDecoration(labelText: "Judul Tugas"),
               ),
-              SizedBox(height: 10,),
+              SizedBox(
+                height: 10,
+              ),
               TextField(
                 controller: descriptionController,
                 decoration: InputDecoration(labelText: "Deskripsi"),
               ),
-              SizedBox(height: 15,),
+              SizedBox(
+                height: 15,
+              ),
               DropdownButtonFormField<String>(
                 value: selectedCategory,
                 hint: Text("Pilih Kategori"),
@@ -130,13 +128,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Batal"),
+              child: Text(
+                "Batal",
+                style: TextStyle(color: Colors.black),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
                 await _firestore.collection('tasks').doc(widget.taskId).update({
                   'task': taskController.text.trim(),
-                  'deskripsion': descriptionController.text.trim(),
+                  'deskripsi': descriptionController.text.trim(),
                   'category': selectedCategory,
                 });
                 setState(() {
@@ -148,7 +149,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Tugas berhasil diperbarui")));
               },
-              child: Text("Simpan"),
+              child: Text(
+                "Simpan",
+                style: TextStyle(color: Colors.black),
+              ),
             ),
           ],
         );
@@ -205,39 +209,87 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                   Text("Judul Tugas:",
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 5),
-                  Text(taskName, style: TextStyle(fontSize: 20)),
+                  SizedBox(height: 10),
+                  Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 5),
+                          Text(taskName, style: TextStyle(fontSize: 20)),
+                          SizedBox(height: 5),
+                        ],
+                      ),
+                    ),
+                  ),
                   SizedBox(height: 20),
                   Text("Kategori Tugas:",
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 5),
-                  Text(taskCategory ?? "Tidak ada kategori",
-                      style: TextStyle(fontSize: 16, color: Colors.black87)),
+                  Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 5),
+                          Text(taskCategory ?? "Tidak ada kategori",
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.black87)),
+                          SizedBox(height: 5),
+                        ],
+                      ),
+                    ),
+                  ),
                   SizedBox(height: 20),
                   Text("Deskripsi Tugas:",
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 5),
-                  Text(description,
-                      style: TextStyle(fontSize: 16, color: Colors.black87)),
+                  Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 5),
+                          Text(description,
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.black87)),
+                          SizedBox(height: 5),
+                        ],
+                      ),
+                    ),
+                  ),
                   SizedBox(height: 20),
                   Text("Status Tugas:",
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 5),
-                  DropdownButton<String>(
-                    value: taskStatus,
-                    onChanged: (newStatus) {
-                      if (newStatus != null) _updateStatus(newStatus);
-                    },
-                    items: ['ToDo', 'In Progress', 'Complete']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                  Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 5),
+                          Text(taskStatus,
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.black87)),
+                          SizedBox(height: 5),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),

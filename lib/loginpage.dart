@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ukk_isnaini_2025/homepage.dart';
 import 'package:ukk_isnaini_2025/registerpage.dart';
-// Tambahkan import register.dart
+
 
 class LoginPage extends StatefulWidget {
   @override
@@ -12,7 +12,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = TextEditingController(),
-  passwordController = TextEditingController();
+      passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -25,13 +25,20 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    // Validasi email format
+    if (!RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+        .hasMatch(email)) {
+      _showAlert('Format email tidak valid');
+      return;
+    }
+
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Cek apakah user ada di Firestore
       DocumentSnapshot userDoc = await _firestore
           .collection('users')
           .doc(userCredential.user!.uid)
@@ -42,16 +49,14 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
-      // Ambil role user (admin/member)
       String role = userDoc['role'] ?? 'member';
 
       _showAlert('Login berhasil', success: true);
 
-      // Navigasi ke Dashboard dengan parameter role
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const Homepage(role: '',),
+          builder: (context) => Homepage(role: role),
         ),
       );
     } on FirebaseAuthException catch (e) {
@@ -72,7 +77,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false, // Menghindari masalah dengan keyboard
+
+      resizeToAvoidBottomInset: false, 
       body: Stack(
         children: [
           Center(
@@ -138,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: Text(
                           'Login',
-                          style: TextStyle(fontSize: 18 , color: Colors.white),
+                          style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ),
                       SizedBox(height: 12),
@@ -147,7 +153,8 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Registerpage()),
+                            MaterialPageRoute(
+                                builder: (context) => Registerpage()),
                           );
                         },
                         child: Text(

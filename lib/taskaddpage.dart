@@ -14,7 +14,7 @@ class _TaskAddPageState extends State<TaskAddPage> {
   final User? user = FirebaseAuth.instance.currentUser;
 
   TextEditingController taskController = TextEditingController();
-  TextEditingController deskripsionController = TextEditingController();
+  TextEditingController deskripsiController = TextEditingController();
 
   List<String> categories = [];
   String? selectedCategory;
@@ -22,21 +22,26 @@ class _TaskAddPageState extends State<TaskAddPage> {
   @override
   void initState() {
     super.initState();
-    _loadCategories(); // Ambil daftar kategori saat halaman dimuat
+    _loadCategories();
   }
 
-  /// **Mengambil daftar kategori dari Firestore**
+  
   void _loadCategories() async {
+    if (user == null) return;
+
     try {
-      QuerySnapshot querySnapshot =
-          await _firestore.collection('kategori').get();
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('kategori')
+          .where('userId', isEqualTo: user!.uid) 
+          .get();
 
       setState(() {
         categories = querySnapshot.docs
-            .map((doc) => doc['nama'] as String) // Ambil field 'name'
+            .map((doc) => doc['nama'] as String) 
             .toList();
         if (categories.isNotEmpty) {
-          selectedCategory = categories.first; // Pilih kategori pertama
+          selectedCategory =
+              categories.first; 
         }
       });
     } catch (e) {
@@ -44,28 +49,32 @@ class _TaskAddPageState extends State<TaskAddPage> {
     }
   }
 
-  /// **Menambahkan tugas ke Firestore**
- void _addTask() async {
+  void _addTask() async {
     String taskText = taskController.text.trim();
-    String deskripsion = deskripsionController.text.trim();
+    deskripsiController.text.trim();
 
     if (taskText.isEmpty) {
       _showSnackBar("Tugas tidak boleh kosong");
       return;
     }
 
+    if (selectedCategory == null) {
+      _showSnackBar("Pilih kategori tugas terlebih dahulu");
+      return;
+    }
+
     try {
       await _firestore.collection('tasks').add({
-        'task': taskText,
-        'deskripsion': deskripsion,
-        'assignedBy': user?.uid ?? '',
-        'category': selectedCategory, // Simpan kategori
+        'task': taskController.text,
+        'userId': user!.uid,
+        'deskripsi':deskripsiController.text,
         'status': 'ToDo',
-        'createdAt': FieldValue.serverTimestamp(),
+        'category': selectedCategory,
+        'createdAt': FieldValue.serverTimestamp(), 
       });
 
       taskController.clear();
-      deskripsionController.clear();
+      deskripsiController.clear();
 
       Navigator.pop(context);
     } catch (e) {
@@ -73,7 +82,7 @@ class _TaskAddPageState extends State<TaskAddPage> {
     }
   }
 
-  /// **Menampilkan pesan snackbar**
+
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
@@ -94,7 +103,7 @@ class _TaskAddPageState extends State<TaskAddPage> {
             TextField(
               controller: taskController,
               decoration: InputDecoration(
-                labelText: 'Tugas Baru',
+                labelText: 'Nama Tugas',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -105,7 +114,7 @@ class _TaskAddPageState extends State<TaskAddPage> {
                 style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             TextField(
-              controller: deskripsionController,
+              controller: deskripsiController,
               decoration: InputDecoration(
                 labelText: 'Deskripsi',
                 border: OutlineInputBorder(
@@ -118,7 +127,7 @@ class _TaskAddPageState extends State<TaskAddPage> {
                 style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
 
-            // **Dropdown Kategori**
+
             DropdownButtonFormField<String>(
               value: selectedCategory,
               hint: Text("Pilih Kategori"),

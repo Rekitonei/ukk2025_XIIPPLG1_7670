@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
-        return LoginPage(); // Jika belum login, arahkan ke LoginScreen
+        return LoginPage(); 
       } else {
         DocumentSnapshot userDoc =
             await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
@@ -32,7 +32,6 @@ class MyApp extends StatelessWidget {
           String role = userDoc['role'] ?? 'member';
           return Homepage(role: role);
         } else {
-          // Jika akun ada di Auth tetapi tidak di Firestore, logout dulu
           await FirebaseAuth.instance.signOut();
           return LoginPage();
         }
@@ -47,7 +46,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'ToDo',
+      title: 'todo ukk',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: FutureBuilder<Widget>(
         future: _checkUserStatus(),

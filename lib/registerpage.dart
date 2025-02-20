@@ -27,6 +27,11 @@ class _RegisterpageState extends State<Registerpage> {
       return;
     }
 
+    if (password.length < 8) {
+      _showAlert('Password minimal 8 karakter');
+      return;
+    }
+
     try {
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -77,9 +82,6 @@ class _RegisterpageState extends State<Registerpage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false, // Menghindari masalah dengan keyboard
-      appBar: AppBar(
-        title: Text('Register'),
-      ),
       body: Stack(
         children: [
           // Konten utama

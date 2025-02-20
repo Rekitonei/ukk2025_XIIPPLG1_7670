@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class KategoriPage extends StatefulWidget {
@@ -10,12 +11,18 @@ class KategoriPage extends StatefulWidget {
 
 class _KategoriPageState extends State<KategoriPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   TextEditingController kategoriController = TextEditingController();
 
   void _tambahKategori() async {
     String namaKategori = kategoriController.text.trim();
+    String userId = _auth.currentUser!.uid; 
+
     if (namaKategori.isNotEmpty) {
-      await _firestore.collection('kategori').add({'nama': namaKategori});
+      await _firestore.collection('kategori').add({
+        'nama': namaKategori,
+        'userId': userId, 
+      });
       kategoriController.clear();
     }
   }
@@ -41,10 +48,9 @@ class _KategoriPageState extends State<KategoriPage> {
             onPressed: () async {
               String namaBaru = editController.text.trim();
               if (namaBaru.isNotEmpty) {
-                await _firestore
-                    .collection('kategori')
-                    .doc(id)
-                    .update({'nama': namaBaru});
+                await _firestore.collection('kategori').doc(id).update({
+                  'nama': namaBaru,
+                });
                 Navigator.pop(context);
               }
             },
@@ -61,6 +67,8 @@ class _KategoriPageState extends State<KategoriPage> {
 
   @override
   Widget build(BuildContext context) {
+    String userId = _auth.currentUser!.uid; 
+
     return Scaffold(
       appBar: AppBar(title: Text("Kategori Tugas")),
       body: Padding(
@@ -85,10 +93,14 @@ class _KategoriPageState extends State<KategoriPage> {
             SizedBox(height: 20),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: _firestore.collection('kategori').snapshots(),
+                stream: _firestore
+                    .collection('kategori')
+                    .where('userId', isEqualTo: userId) 
+                    .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData)
                     return Center(child: CircularProgressIndicator());
+
                   var kategoriList = snapshot.data!.docs;
 
                   return ListView.builder(
